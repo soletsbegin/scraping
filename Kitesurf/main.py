@@ -67,7 +67,7 @@ class Surf:
         slise = re.findall(r'<a href=.+?&ps=">.+?</a>', html)
         for s in slise[1:]:
             parents.append(re.findall(r'">.+?</', s)[0][2:-2])
-        return '/'.join(parents)
+        return '/'.join(parents[1:])
 
     @classmethod
     def get_windguru(cls, html):
@@ -81,18 +81,19 @@ class Surf:
         info = re.findall(r'<br/>.+?<table', info[0])
         try:
             info = re.split(r'<.+?>', info[0][:-6])
-            return " ".join(i.strip() for i in info if len(i) > 0)
+            return "\n".join(i.strip() for i in info if len(i) > 0)
         except IndexError:
             return ""
 
     @classmethod
     def get_rating(cls, html):
-        rating = re.findall(r'<em>.+?</em>', html)
+        price = [i.group(1) for i in re.finditer(r'<em>\((.+?)\)</em>', html)]
+
         return {
-            'Kitelaunch vänligt': re.findall(r'\(.+?\)', rating[0])[0][1:-1],
-            'Långgrunt': re.findall(r'\(.+?\)', rating[1])[0][1:-1],
-            'Surf': re.findall(r'\(.+?\)', rating[2])[0][1:-1],
-            'Plattvatten': re.findall(r'\(.+?\)', rating[3])[0][1:-1],
+            'Kitelaunch\n vänligt': price[0],
+            'Långgrunt':  price[1],
+            'Surf':  price[2],
+            'Plattvatten':  price[3],
         }
 
     def parse_url(self, url):
@@ -135,7 +136,6 @@ class Surf:
             self.all_info[point_id].update(self.get_wind(html[2]))
             self.all_info[point_id].update(self.get_rating(html[2]))
 
-
     def get_info(self):
         step = 100 / len(self.urls_list[:5])
         count = 0
@@ -154,11 +154,11 @@ class Surf:
             self.all_info[point_id].update(self.get_wind(html))
             self.all_info[point_id].update(self.get_rating(html))
 
-
             # progress bar
             count += step
             print("[{}]{}%".format('|' * round(count), round(count)))
             print()
+
 
 def save_csv(dictionary):
     print('Saving...')
@@ -166,7 +166,7 @@ def save_csv(dictionary):
     with open('points.csv', 'w', newline='') as csvfile:
         fieldnames = ['ID', 'NAME', 'PARENT DIRECTORY', 'COORDINATES',
                       'N', 'NW', 'W', 'SW', 'S', 'SE', 'E', 'NE',
-                      'Kitelaunch vänligt', 'Långgrunt', 'Surf', 'Plattvatten',
+                      'Kitelaunch\n vänligt', 'Långgrunt', 'Surf', 'Plattvatten',
                       'WINDGURU', 'ABOUT']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
@@ -180,5 +180,7 @@ def save_csv(dictionary):
 if __name__ == '__main__':
     surf = Surf(BASE_URL)
     surf.make_urls()
+    # for i in surf.urls_list:
+    #     print('"{}",'.format(i[0]))
     surf.get_info_alt()
     save_csv(surf.all_info)
