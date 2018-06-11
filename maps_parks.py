@@ -3,7 +3,6 @@ from time import sleep
 from random import randint
 import csv
 import json
-import pprint
 
 wb = webdriver.Chrome()
 
@@ -18,7 +17,9 @@ SELECTORS = {
     'back_button_xpath':
         '//span[@style="top: -12px"]/span',
     'back_button_css':
-        '#featurecardPanel > div > div > div.qqvbed-tJHJj > div.HzV7m-tJHJj-LgbsSe-haAclf.qqvbed-a4fUwd-LgbsSe-haAclf > div > content > span'
+        '#featurecardPanel > div > div > div.qqvbed-tJHJj > div.HzV7m-tJHJj-LgbsSe-haAclf.qqvbed-a4fUwd-LgbsSe-haAclf > div > content > span',
+    'park_info_xpath':
+        '//div[@class="qqvbed-p83tee"]'
 }
 
 data = []
@@ -39,7 +40,7 @@ for i in range(len(parks)):
     title = parks[i].text
     temp = dict()
     print(title)
-    info = wb.find_elements_by_xpath('//div[@class="qqvbed-p83tee"]')
+    info = wb.find_elements_by_xpath(SELECTORS['park_info_xpath'])
     sleep_rand(b=3)
     for line in info:
         text = line.text.split('\n')
@@ -50,7 +51,6 @@ for i in range(len(parks)):
     back = wb.find_element_by_css_selector(SELECTORS['back_button_css'])
     back.click()
     sleep_rand(b=3)
-# pprint.pprint(data)
 
 # with open('parks.json', 'w') as jf:
 #     json.dump(data, jf, indent=3)
