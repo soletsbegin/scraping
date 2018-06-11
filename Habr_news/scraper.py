@@ -78,8 +78,8 @@ if __name__ == '__main__':
     for p in habr.current_titles:
         print(p['title'])
     print(habr.current_titles[1]['link'])
-    print(habr.get_post(habr.current_titles[1]['link']))
+    print(habr.get_post(habr.current_titles[2]['link']))
     habr.get_posts(habr.current_page)
-    for p in habr.current_titles:
-        print(p['title'])
-    print(habr.current_titles[1]['link'])
+    # for p in habr.current_titles:
+    #     print(p['title'])
+    # print(habr.current_titles[1]['link'])

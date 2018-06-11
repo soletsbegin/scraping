@@ -9,7 +9,8 @@ import requests
 BASE_URL = 'http://spotguide.kicks-ass.net'
 headers = {
     'user-agent':
-               'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36'
+               'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 '
+               '(KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36'
 }
 VECTORS = {
     'Nordväst': 'NW',
@@ -29,11 +30,10 @@ VECTORS_COND = {
 
 
 class Surf:
-    def __init__(self, url, *args):
+    def __init__(self, url):
         self._start_url = url
         self.urls_list = []
         self.html_list = []
-        self.find_list = args
         self.all_info = dict()
 
     def make_urls(self):
@@ -97,9 +97,11 @@ class Surf:
         }
 
     def parse_url(self, url):
-        self.html_list.append(('{}'.format(re.findall(r'ID=\d+', url[0])[0][3:]),
-                               url[1].capitalize(),
-                               requests.get(self._start_url + url[0], headers=headers).text))
+        id_ = '{}'.format(re.findall(r'ID=\d+', url[0])[0][3:])
+        name = url[1].capitalize(),
+        html = requests.get(self._start_url + url[0], headers=headers).text
+        data = id_, name, html
+        self.html_list.append(data)
 
     def parse_all(self):
         step = 100 / len(self.urls_list)
@@ -108,6 +110,7 @@ class Surf:
             t = threading.Thread(target=self.parse_url, args=(url, ))
             t.start()
             sleep(0.01)
+
             # progress bar
             count += step
             print('\n'*100)
@@ -116,25 +119,26 @@ class Surf:
 
     def get_info_alt(self):
         self.parse_all()
+
         for count in range(101):
+
+            # progressbar
             sleep(0.1)
             print('\n' * 100)
             print('Please wait')
             print("[{}]{}%".format('|' * round(count), round(count)))
 
-        for html in self.html_list:
-            point_id = html[0]
+        for (point_id, name, html) in self.html_list:
             self.all_info[point_id] = dict()
 
-            # print(point_id, html[1])
-            self.all_info[point_id]['NAME'] = html[1]
+            self.all_info[point_id]['NAME'] = name
             self.all_info[point_id]['ID'] = point_id
-            self.all_info[point_id]['PARENT DIRECTORY'] = self.get_parent(html[2])
-            self.all_info[point_id]['COORDINATES'] = self.get_coordinates(html[2])
-            self.all_info[point_id]['WINDGURU'] = self.get_windguru(html[2])
-            self.all_info[point_id]['ABOUT'] = self.get_about(html[2])
-            self.all_info[point_id].update(self.get_wind(html[2]))
-            self.all_info[point_id].update(self.get_rating(html[2]))
+            self.all_info[point_id]['PARENT DIRECTORY'] = self.get_parent(html)
+            self.all_info[point_id]['COORDINATES'] = self.get_coordinates(html)
+            self.all_info[point_id]['WINDGURU'] = self.get_windguru(html)
+            self.all_info[point_id]['ABOUT'] = self.get_about(html)
+            self.all_info[point_id].update(self.get_wind(html))
+            self.all_info[point_id].update(self.get_rating(html))
 
     def get_info(self):
         step = 100 / len(self.urls_list[:5])
