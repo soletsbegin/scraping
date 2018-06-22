@@ -44,7 +44,7 @@ for i in range(len(parks)):
     sleep_rand(b=3)
     for line in info:
         text = line.text.split('\n')
-        temp[text[0]] = text[1]
+        temp[text[0]] = text[1]f
     data.append(temp)
     print('='*100)
     sleep_rand()
